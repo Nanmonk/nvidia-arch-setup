@@ -24,27 +24,24 @@ std::string DriverInstallStep::description() const {
 
 std::string DriverInstallStep::preview(const SystemInfo& info) const {
     const auto& gpu = *info.nvidia_gpu;
-
-    std::string official = "nvidia-utils";
-    std::string aur      = gpu.driver_package;
-
-    if (!gpu.lib32_package.empty()) {
-        if (gpu.driver_is_aur) aur      += " " + gpu.lib32_package;
-        else                   official += " " + gpu.lib32_package;
-    }
-    if (gpu.driver_is_aur)
-        aur += " " + kernel_headers(info.kernel);
-    else
-        official += " " + gpu.driver_package;
-
     std::string result;
-    result += "pacman -S --needed " + official + "\n";
+
     if (gpu.driver_is_aur) {
+        // Legacy drivers: only headers from pacman; driver+utils from AUR
+        result += "pacman -S --needed " + kernel_headers(info.kernel) + "\n";
+        std::string aur = gpu.driver_package;
+        if (!gpu.lib32_package.empty())
+            aur += " " + gpu.lib32_package;
         std::string helper = aur_helper_cmd(info.aur_helper);
         if (helper.empty())
             result += "  (AUR) " + aur + "  — needs paru or yay";
         else
             result += helper + " -S --needed " + aur;
+    } else {
+        std::string official = gpu.driver_package + " nvidia-utils";
+        if (!gpu.lib32_package.empty())
+            official += " " + gpu.lib32_package;
+        result += "pacman -S --needed " + official;
     }
     return result;
 }
@@ -58,38 +55,37 @@ bool DriverInstallStep::execute(const SystemInfo& info) {
 
     utils::print_info("GPU: " + gpu.name);
     utils::print_info("Driver: " + gpu.driver_package +
-                      (gpu.driver_is_aur ? " (AUR)" : " (official)"));
+                      (gpu.driver_is_aur ? " (AUR legacy)" : " (official)"));
 
-    // Split into official repo packages and AUR packages
-    std::string official_pkgs = "nvidia-utils";
-    std::string aur_pkgs      = gpu.driver_package;
-
-    if (!gpu.lib32_package.empty()) {
-        if (gpu.driver_is_aur) aur_pkgs      += " " + gpu.lib32_package;
-        else                   official_pkgs += " " + gpu.lib32_package;
+    if (!gpu.driver_is_aur) {
+        // Official driver (Turing+): all packages in official repos
+        std::string official_pkgs = gpu.driver_package + " nvidia-utils";
+        if (!gpu.lib32_package.empty())
+            official_pkgs += " " + gpu.lib32_package;
+        utils::print_info("Installing from official repos: " + official_pkgs);
+        return utils::exec_interactive("pacman -S --needed " + official_pkgs);
     }
 
-    if (gpu.driver_is_aur) {
-        aur_pkgs += " " + kernel_headers(info.kernel);
-    } else {
-        official_pkgs += " " + gpu.driver_package;
-    }
-
-    // Install official packages first
-    utils::print_info("Installing from official repos: " + official_pkgs);
-    if (!utils::exec_interactive("pacman -S --needed " + official_pkgs)) {
-        utils::print_err("pacman install failed");
+    // Legacy AUR driver (Pascal/Maxwell/Volta/Kepler/Fermi):
+    // nvidia-580xx-utils conflicts with nvidia-utils — do NOT install nvidia-utils via pacman.
+    // Only install kernel headers (DKMS build dependency) from official repos.
+    std::string headers = kernel_headers(info.kernel);
+    utils::print_info("Installing kernel headers for DKMS: " + headers);
+    if (!utils::exec_interactive("pacman -S --needed " + headers)) {
+        utils::print_err("Failed to install kernel headers");
         return false;
     }
 
-    if (!gpu.driver_is_aur) return true;
+    std::string aur_pkgs = gpu.driver_package;
+    if (!gpu.lib32_package.empty())
+        aur_pkgs += " " + gpu.lib32_package;
 
-    // AUR packages
     std::string helper = aur_helper_cmd(info.aur_helper);
     if (helper.empty()) {
         utils::print_warn("No AUR helper (paru/yay) found.");
         utils::print_warn("Install manually from AUR: " + aur_pkgs);
-        utils::print_info("Or install paru: https://aur.archlinux.org/packages/paru");
+        utils::print_warn("Note: remove nvidia-utils first if installed (conflicts with AUR utils)");
+        utils::print_info("Install paru: https://aur.archlinux.org/packages/paru");
         return false;
     }
 

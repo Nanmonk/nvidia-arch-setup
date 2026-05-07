@@ -35,9 +35,9 @@ bool OptimusStep::execute(const SystemInfo& info) {
         " iGPU + NVIDIA dGPU");
 
     // Install required packages
-    utils::print_info("Installing xorg-xrandr...");
-    if (!utils::exec_interactive("pacman -S --needed xorg-xrandr"))
-        utils::print_warn("xorg-xrandr install failed, continuing...");
+    utils::print_info("Installing nvidia-prime and xorg-xrandr...");
+    if (!utils::exec_interactive("pacman -S --needed nvidia-prime xorg-xrandr"))
+        utils::print_warn("Package install failed, continuing...");
 
     // Write Xorg outputclass config for X11/XWayland
     utils::exec_interactive("mkdir -p /etc/X11/xorg.conf.d");

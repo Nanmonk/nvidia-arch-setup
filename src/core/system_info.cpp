@@ -2,7 +2,6 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <cctype>
-#include <map>
 
 static std::string to_lower(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -65,12 +64,22 @@ NvidiaArch SystemInfo::arch_from_name(const std::string& name) {
     return NvidiaArch::Unknown;
 }
 
+// nvidia-open (pre-built) only ships for linux and linux-lts.
+// Zen/Hardened/Custom kernels must use the DKMS variant.
+static std::string official_driver_for_kernel(KernelType k) {
+    switch (k) {
+        case KernelType::Linux:    return "nvidia-open";
+        case KernelType::LinuxLts: return "nvidia-open-lts";
+        default:                   return "nvidia-open-dkms";
+    }
+}
+
 std::string SystemInfo::driver_for_arch(NvidiaArch arch) {
     switch (arch) {
         case NvidiaArch::Blackwell:
         case NvidiaArch::AdaLovelace:
         case NvidiaArch::Ampere:
-        case NvidiaArch::Turing:    return "nvidia-open";
+        case NvidiaArch::Turing:    return "nvidia-open";        // placeholder; overridden in detect()
         case NvidiaArch::Volta:
         case NvidiaArch::Pascal:
         case NvidiaArch::Maxwell:   return "nvidia-580xx-dkms";
@@ -186,5 +195,11 @@ SystemInfo SystemInfo::detect() {
     info.bootloader  = detect_bootloader();
     info.session     = detect_session();
     info.aur_helper  = detect_aur_helper();
+
+    // For official (Turing+) drivers, pick the right pre-built vs DKMS variant now that
+    // the kernel type is known. AUR legacy drivers always use DKMS so no adjustment needed.
+    if (info.nvidia_gpu && !info.nvidia_gpu->driver_is_aur)
+        info.nvidia_gpu->driver_package = official_driver_for_kernel(info.kernel);
+
     return info;
 }

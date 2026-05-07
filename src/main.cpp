@@ -9,6 +9,7 @@
 #include "steps/kernel_params.hpp"
 #include "steps/pacman_hook.hpp"
 #include "steps/optimus.hpp"
+#include "steps/suspend.hpp"
 
 static void print_banner() {
     std::cout <<
@@ -117,6 +118,7 @@ int main(int argc, char* argv[]) {
     runner.add(std::make_unique<KernelParamsStep>());
     runner.add(std::make_unique<PacmanHookStep>());
     runner.add(std::make_unique<OptimusStep>());
+    runner.add(std::make_unique<NvidiaSuspendStep>());
     runner.add(std::make_unique<MkinitcpioRebuildStep>());
     runner.run(info);
 

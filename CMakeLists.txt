@@ -15,6 +15,7 @@ add_executable(nvidia-arch-setup
     src/steps/kernel_params.cpp
     src/steps/pacman_hook.cpp
     src/steps/optimus.cpp
+    src/steps/suspend.cpp
 )
 
 target_include_directories(nvidia-arch-setup PRIVATE src)
