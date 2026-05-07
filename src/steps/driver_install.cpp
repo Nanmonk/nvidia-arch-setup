@@ -1,5 +1,7 @@
 #include "driver_install.hpp"
 #include "core/utils.hpp"
+#include <cstdlib>
+#include <unistd.h>
 
 static std::string kernel_headers(KernelType k) {
     switch (k) {
@@ -89,6 +91,21 @@ bool DriverInstallStep::execute(const SystemInfo& info) {
         return false;
     }
 
+    // paru/yay refuse to run as root; drop privileges back to the invoking user.
+    std::string aur_cmd;
+    if (geteuid() == 0) {
+        const char* sudo_user = std::getenv("SUDO_USER");
+        if (!sudo_user) {
+            utils::print_err("Running as root without SUDO_USER. Cannot invoke AUR helper.");
+            utils::print_warn("Run the tool via sudo from a regular user: sudo nvidia-arch-setup");
+            utils::print_warn("Or install manually: " + aur_pkgs);
+            return false;
+        }
+        aur_cmd = "sudo -u " + std::string(sudo_user) + " " + helper + " -S --needed " + aur_pkgs;
+    } else {
+        aur_cmd = helper + " -S --needed " + aur_pkgs;
+    }
+
     utils::print_info("Installing from AUR with " + helper + ": " + aur_pkgs);
-    return utils::exec_interactive(helper + " -S --needed " + aur_pkgs);
+    return utils::exec_interactive(aur_cmd);
 }

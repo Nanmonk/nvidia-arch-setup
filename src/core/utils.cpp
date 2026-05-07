@@ -2,10 +2,12 @@
 #include <array>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 #include <sys/wait.h>
 
 namespace utils {
@@ -44,9 +46,24 @@ ExecResult exec(const std::string& cmd) {
     ExecResult result;
     std::array<char, 256> buf;
 
-    std::string full_cmd = cmd + " 2>/tmp/nvidia_setup_stderr";
+    // Use mkstemp to avoid permission conflicts when switching between
+    // root and non-root (e.g. dry-run as user, then sudo run as root).
+    char tmppath[] = "/tmp/nvidia_setup_XXXXXX";
+    int  tmpfd     = mkstemp(tmppath);
+    if (tmpfd == -1) {
+        FILE* pipe = popen(cmd.c_str(), "r");
+        if (!pipe) { result.exit_code = -1; return result; }
+        while (fgets(buf.data(), buf.size(), pipe))
+            result.stdout_str += buf.data();
+        result.exit_code = WEXITSTATUS(pclose(pipe));
+        return result;
+    }
+    close(tmpfd);
+
+    std::string full_cmd = cmd + " 2>" + tmppath;
     FILE* pipe = popen(full_cmd.c_str(), "r");
     if (!pipe) {
+        unlink(tmppath);
         result.exit_code = -1;
         return result;
     }
@@ -54,17 +71,21 @@ ExecResult exec(const std::string& cmd) {
         result.stdout_str += buf.data();
     result.exit_code = WEXITSTATUS(pclose(pipe));
 
-    auto err = read_file("/tmp/nvidia_setup_stderr");
+    auto err = read_file(tmppath);
     if (err) result.stderr_str = *err;
+    unlink(tmppath);
 
     return result;
 }
 
 bool exec_interactive(const std::string& cmd) {
     log_write("CMD", cmd);
-    int ret = WEXITSTATUS(std::system(cmd.c_str()));
-    log_write("CMD", "exit=" + std::to_string(ret));
-    return ret == 0;
+    int status = std::system(cmd.c_str());
+    // WIFEXITED is false when killed by signal (e.g. Ctrl+C); treat as failure.
+    bool ok = WIFEXITED(status) && WEXITSTATUS(status) == 0;
+    log_write("CMD", std::string("exit=") +
+              (WIFEXITED(status) ? std::to_string(WEXITSTATUS(status)) : "signal"));
+    return ok;
 }
 
 // --- file ops ---

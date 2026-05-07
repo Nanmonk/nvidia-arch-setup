@@ -17,15 +17,34 @@
 
 ## 驱动选择逻辑
 
-| GPU 架构 | 内核 | 驱动包 | 来源 |
+工具根据 GPU 架构自动选择驱动包，再根据内核类型决定安装预编译版还是 DKMS 版。
+
+### 支持的 GPU 型号与驱动包
+
+| 架构 | 代表显卡型号 | 驱动包 | 来源 |
 |---|---|---|---|
-| Blackwell / Ada / Ampere / Turing | linux | `nvidia-open` | 官方源 |
-| Blackwell / Ada / Ampere / Turing | linux-lts | `nvidia-open-lts` | 官方源 |
-| Blackwell / Ada / Ampere / Turing | zen / hardened / 自定义 | `nvidia-open-dkms` | 官方源 |
-| Volta / Pascal / Maxwell (GTX 10/9/8xx) | 任意 | `nvidia-580xx-dkms` | AUR |
-| Kepler (GTX 7/6xx) | 任意 | `nvidia-470xx-dkms` | AUR |
-| Fermi (GTX 5/4xx) | 任意 | `nvidia-390xx-dkms` | AUR |
-| Tesla (GT 200) | 任意 | `nvidia-340xx-dkms` | AUR |
+| **Blackwell** (20xx) | RTX 5090 / 5080 / 5070 / 5060 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
+| **Ada Lovelace** (40xx) | RTX 4090 / 4080 / 4070 / 4060 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
+| **Ampere** (30xx / A系) | RTX 3090 / 3080 / 3070 / 3060 / A6000 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
+| **Turing** (20xx / 16xx) | RTX 2080 / 2070 / 2060 / GTX 1660 / 1650 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
+| **Volta** (V系) | Titan V / V100 | `nvidia-580xx-dkms` | AUR |
+| **Pascal** (10xx) | GTX 1080 / 1070 / 1060 / 1050 / Titan X | `nvidia-580xx-dkms` | AUR |
+| **Maxwell** (9xx / 8xx / 750) | GTX 980 / 970 / 960 / 950 / 750 Ti | `nvidia-580xx-dkms` | AUR |
+| **Kepler** (7xx / 6xx) | GTX 780 / 770 / 760 / 680 / 670 / 660 | `nvidia-470xx-dkms` | AUR |
+| **Fermi** (5xx / 4xx) | GTX 580 / 570 / 560 / 480 / 470 | `nvidia-390xx-dkms` | AUR |
+| **Tesla** (GT 200) | GT 240 / 220 / 9800 GTX | `nvidia-340xx-dkms` | AUR |
+
+> **注意**：Pascal 及更旧架构（GTX 10xx 及以下）从 NVIDIA 595 驱动起已移出官方支持，必须使用 AUR 遗留驱动，且需要提前安装 AUR 助手（paru / yay）。
+
+### 官方驱动根据内核自动选择
+
+对于 Turing+ 架构（官方源驱动），工具根据当前内核选择最合适的包：
+
+| 内核 | 驱动包 | 说明 |
+|---|---|---|
+| `linux` | `nvidia-open` | 预编译，即装即用 |
+| `linux-lts` | `nvidia-open-lts` | 预编译，即装即用 |
+| `linux-zen` / `linux-hardened` / 自定义 | `nvidia-open-dkms` | 本地 DKMS 编译，约 5~15 分钟 |
 
 ## 前置依赖
 
