@@ -28,6 +28,7 @@ struct GpuInfo {
     std::string name;
     NvidiaArch  arch;
     std::string driver_package;
+    std::string utils_package;
     std::string lib32_package;
     bool        driver_is_aur = false;
 };
@@ -52,6 +53,7 @@ private:
     static SessionType detect_session();
     static NvidiaArch arch_from_name(const std::string& name);
     static std::string driver_for_arch(NvidiaArch arch);
+    static std::string utils_for_arch(NvidiaArch arch);
     static std::string lib32_for_arch(NvidiaArch arch);
     static bool driver_is_aur(NvidiaArch arch);
     static AurHelper detect_aur_helper();

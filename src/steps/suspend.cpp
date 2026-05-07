@@ -1,23 +1,15 @@
 #include "suspend.hpp"
 #include "core/utils.hpp"
-#include <vector>
-#include <string>
 
-static const std::vector<std::string> SERVICES = {
-    "nvidia-suspend.service",
-    "nvidia-resume.service",
-    "nvidia-hibernate.service",
-};
+static const char* ENABLE_CMD =
+    "systemctl enable nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service";
 
 std::string NvidiaSuspendStep::description() const {
     return "Enable nvidia-suspend/resume/hibernate services (prevents black screen on wakeup)";
 }
 
 std::string NvidiaSuspendStep::preview(const SystemInfo& /* info */) const {
-    std::string result;
-    for (const auto& svc : SERVICES)
-        result += "systemctl enable " + svc + "\n";
-    return result;
+    return std::string(ENABLE_CMD) + "\n";
 }
 
 bool NvidiaSuspendStep::applicable(const SystemInfo& info) const {
@@ -25,14 +17,10 @@ bool NvidiaSuspendStep::applicable(const SystemInfo& info) const {
 }
 
 bool NvidiaSuspendStep::execute(const SystemInfo& /* info */) {
-    bool ok = true;
-    for (const auto& svc : SERVICES) {
-        utils::print_info("Enabling " + svc + "...");
-        if (!utils::exec_interactive("systemctl enable " + svc)) {
-            utils::print_warn("Failed to enable " + svc +
-                              " (may not exist until after reboot with driver loaded)");
-            ok = false;
-        }
+    if (!utils::exec_interactive(ENABLE_CMD)) {
+        utils::print_warn("Failed to enable suspend services"
+                          " (may not exist until after reboot with driver loaded)");
+        return false;
     }
-    return ok;
+    return true;
 }

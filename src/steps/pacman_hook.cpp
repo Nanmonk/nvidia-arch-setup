@@ -15,18 +15,6 @@ bool PacmanHookStep::applicable(const SystemInfo& info) const {
 bool PacmanHookStep::execute(const SystemInfo& info) {
     const auto& gpu = *info.nvidia_gpu;
 
-    // Derive utils package: "nvidia-580xx-dkms" -> "nvidia-580xx-utils"
-    // For official drivers the utils package is always "nvidia-utils".
-    std::string utils_pkg;
-    if (gpu.driver_is_aur) {
-        utils_pkg = gpu.driver_package;
-        auto pos  = utils_pkg.find("-dkms");
-        if (pos != std::string::npos)
-            utils_pkg.replace(pos, 5, "-utils");
-    } else {
-        utils_pkg = "nvidia-utils";
-    }
-
     std::string hook =
         "[Trigger]\n"
         "Operation=Install\n"
@@ -34,7 +22,7 @@ bool PacmanHookStep::execute(const SystemInfo& info) {
         "Operation=Remove\n"
         "Type=Package\n"
         "Target=" + gpu.driver_package + "\n"
-        "Target=" + utils_pkg + "\n"
+        "Target=" + gpu.utils_package + "\n"
         "Target=linux\n"
         "\n"
         "[Action]\n"

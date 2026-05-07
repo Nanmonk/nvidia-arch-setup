@@ -79,7 +79,7 @@ std::string SystemInfo::driver_for_arch(NvidiaArch arch) {
         case NvidiaArch::Blackwell:
         case NvidiaArch::AdaLovelace:
         case NvidiaArch::Ampere:
-        case NvidiaArch::Turing:    return "nvidia-open";        // placeholder; overridden in detect()
+        case NvidiaArch::Turing:    return "nvidia-open";
         case NvidiaArch::Volta:
         case NvidiaArch::Pascal:
         case NvidiaArch::Maxwell:   return "nvidia-580xx-dkms";
@@ -87,6 +87,21 @@ std::string SystemInfo::driver_for_arch(NvidiaArch arch) {
         case NvidiaArch::Fermi:     return "nvidia-390xx-dkms";
         case NvidiaArch::Tesla:     return "nvidia-340xx-dkms";
         default:                    return "nvidia-open";
+    }
+}
+
+std::string SystemInfo::utils_for_arch(NvidiaArch arch) {
+    switch (arch) {
+        case NvidiaArch::Blackwell:
+        case NvidiaArch::AdaLovelace:
+        case NvidiaArch::Ampere:
+        case NvidiaArch::Turing:    return "nvidia-utils";
+        case NvidiaArch::Volta:
+        case NvidiaArch::Pascal:
+        case NvidiaArch::Maxwell:   return "nvidia-580xx-utils";
+        case NvidiaArch::Kepler:    return "nvidia-470xx-utils";
+        case NvidiaArch::Fermi:     return "nvidia-390xx-utils";
+        default:                    return "";
     }
 }
 
@@ -121,6 +136,7 @@ std::optional<GpuInfo> SystemInfo::detect_nvidia() {
 
         gpu.arch           = arch_from_name(gpu.name);
         gpu.driver_package = driver_for_arch(gpu.arch);
+        gpu.utils_package  = utils_for_arch(gpu.arch);
         gpu.lib32_package  = lib32_for_arch(gpu.arch);
         gpu.driver_is_aur  = driver_is_aur(gpu.arch);
         return gpu;
@@ -179,10 +195,16 @@ AurHelper SystemInfo::detect_aur_helper() {
 }
 
 SessionType SystemInfo::detect_session() {
-    auto res = utils::exec("echo $XDG_SESSION_TYPE");
+    // $XDG_SESSION_TYPE is stripped by sudo; query loginctl instead.
+    auto res = utils::exec("loginctl show-session $(loginctl | awk 'NR==2{print $1}') -p Type --value 2>/dev/null");
     std::string s = utils::trim(res.stdout_str);
     if (s == "wayland") return SessionType::Wayland;
     if (s == "x11")     return SessionType::X11;
+    // Fallback: read from the real user's environment via /proc
+    auto env = utils::exec("cat /proc/$(pgrep -u $(logname) plasmashell | head -1)/environ 2>/dev/null | tr '\\0' '\\n' | grep XDG_SESSION_TYPE");
+    s = utils::trim(env.stdout_str);
+    if (s.find("wayland") != std::string::npos) return SessionType::Wayland;
+    if (s.find("x11")     != std::string::npos) return SessionType::X11;
     return SessionType::Unknown;
 }
 
