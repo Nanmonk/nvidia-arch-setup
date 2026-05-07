@@ -10,7 +10,7 @@ AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 
 # Line length
-ColumnLimit: 100
+ColumnLimit: 120
 
 # Includes
 SortIncludes: CaseSensitive

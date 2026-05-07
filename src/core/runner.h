@@ -7,8 +7,7 @@
 
 class Runner {
   public:
-    explicit Runner(bool default_mode, bool dry_run = false)
-        : default_mode_(default_mode), dry_run_(dry_run) {}
+    explicit Runner(bool default_mode, bool dry_run = false) : default_mode_(default_mode), dry_run_(dry_run) {}
 
     void add(std::unique_ptr<Step> step);
     void run(const SystemInfo& info);

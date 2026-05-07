@@ -75,7 +75,6 @@ void Runner::run(const SystemInfo& info) {
         }
     }
 
-    std::cout << "\n\033[1mSummary:\033[0m " << done << " done, " << skipped << " skipped, "
-              << failed << " failed"
+    std::cout << "\n\033[1mSummary:\033[0m " << done << " done, " << skipped << " skipped, " << failed << " failed"
               << " (of " << total << " total)\n";
 }

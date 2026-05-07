@@ -36,14 +36,14 @@ main()
 
 ### 添加新步骤
 
-1. 创建 `src/steps/foo.hpp` 和 `src/steps/foo.cpp`
-2. 继承 `Step`（定义于 `src/core/step.hpp`），实现 `name()`、`description()`、`execute()`；按需覆写 `applicable()` 和 `preview()`
+1. 创建 `src/steps/foo.h` 和 `src/steps/foo.cpp`
+2. 继承 `Step`（定义于 `src/core/step.h`），实现 `name()`、`description()`、`execute()`；按需覆写 `applicable()` 和 `preview()`
 3. 将 `.cpp` 加入 `CMakeLists.txt`
 4. 在 `main.cpp` 中用 `runner.add(std::make_unique<FooStep>())` 注册
 
 ### 关键数据流
 
-- `SystemInfo`（定义于 `src/core/system_info.hpp`）保存所有检测结果：`nvidia_gpu`（`optional<GpuInfo>`）、`is_optimus`、`kernel`、`bootloader`、`session`、`aur_helper`。
+- `SystemInfo`（定义于 `src/core/system_info.h`）保存所有检测结果：`nvidia_gpu`（`optional<GpuInfo>`）、`is_optimus`、`kernel`、`bootloader`、`session`、`aur_helper`。
 
 - **驱动包选择**（`system_info.cpp`）：`detect_nvidia()` 先用 `driver_for_arch()` 写入占位值，`detect()` 在知道内核类型后，对 Turing+ 调用 `official_driver_for_kernel()` 覆写：
   - `linux` → `nvidia-open`
@@ -70,7 +70,7 @@ main()
 
 ### 工具函数
 
-`src/core/utils.hpp` 提供：
+`src/core/utils.h` 提供：
 - `exec()` — 捕获 stdout/stderr，非交互式
 - `exec_interactive()` — 使用 `std::system()`，允许 pacman/paru 向用户提问；记录命令和退出码
 - 文件 I/O：`read_file`、`write_file`、`file_contains`、`file_exists`

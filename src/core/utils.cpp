@@ -91,8 +91,7 @@ bool exec_interactive(const std::string& cmd) {
     int status = std::system(cmd.c_str());
     // WIFEXITED is false when killed by signal (e.g. Ctrl+C); treat as failure.
     bool ok = WIFEXITED(status) && WEXITSTATUS(status) == 0;
-    log_write("CMD", std::string("exit=") +
-                         (WIFEXITED(status) ? std::to_string(WEXITSTATUS(status)) : "signal"));
+    log_write("CMD", std::string("exit=") + (WIFEXITED(status) ? std::to_string(WEXITSTATUS(status)) : "signal"));
     return ok;
 }
 

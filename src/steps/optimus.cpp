@@ -34,8 +34,7 @@ bool OptimusStep::applicable(const SystemInfo& info) const {
 }
 
 bool OptimusStep::execute(const SystemInfo& info) {
-    utils::print_info("Optimus detected: " +
-                      std::string(info.igpu_vendor == IgpuVendor::Intel ? "Intel" : "AMD") +
+    utils::print_info("Optimus detected: " + std::string(info.igpu_vendor == IgpuVendor::Intel ? "Intel" : "AMD") +
                       " iGPU + NVIDIA dGPU");
 
     // Install required packages

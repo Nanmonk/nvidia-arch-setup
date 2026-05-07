@@ -65,8 +65,7 @@ bool DriverInstallStep::execute(const SystemInfo& info) {
     const auto& gpu = *info.nvidia_gpu;
 
     utils::print_info("GPU: " + gpu.name);
-    utils::print_info("Driver: " + gpu.driver_package +
-                      (gpu.driver_is_aur ? " (AUR legacy)" : " (official)"));
+    utils::print_info("Driver: " + gpu.driver_package + (gpu.driver_is_aur ? " (AUR legacy)" : " (official)"));
 
     if (!gpu.driver_is_aur) {
         // Official driver (Turing+): all packages in official repos
@@ -95,8 +94,7 @@ bool DriverInstallStep::execute(const SystemInfo& info) {
     if (helper.empty()) {
         utils::print_warn("No AUR helper (paru/yay) found.");
         utils::print_warn("Install manually from AUR: " + aur_pkgs);
-        utils::print_warn(
-            "Note: remove nvidia-utils first if installed (conflicts with AUR utils)");
+        utils::print_warn("Note: remove nvidia-utils first if installed (conflicts with AUR utils)");
         utils::print_info("Install paru: https://aur.archlinux.org/packages/paru");
         return false;
     }

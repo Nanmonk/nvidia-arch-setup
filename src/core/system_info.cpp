@@ -59,8 +59,7 @@ NvidiaArch SystemInfo::arch_from_name(const std::string& name) {
         return NvidiaArch::Fermi;
 
     // Tesla (GT 200 era)
-    if (n.find("gt2") != std::string::npos || n.find("g80") != std::string::npos ||
-        n.find("g90") != std::string::npos)
+    if (n.find("gt2") != std::string::npos || n.find("g80") != std::string::npos || n.find("g90") != std::string::npos)
         return NvidiaArch::Tesla;
 
     return NvidiaArch::Unknown;
@@ -234,8 +233,7 @@ AurHelper SystemInfo::detect_aur_helper() {
 
 SessionType SystemInfo::detect_session() {
     // $XDG_SESSION_TYPE is stripped by sudo; query loginctl instead.
-    auto res = utils::exec(
-        "loginctl show-session $(loginctl | awk 'NR==2{print $1}') -p Type --value 2>/dev/null");
+    auto res = utils::exec("loginctl show-session $(loginctl | awk 'NR==2{print $1}') -p Type --value 2>/dev/null");
     std::string s = utils::trim(res.stdout_str);
     if (s == "wayland")
         return SessionType::Wayland;
@@ -243,11 +241,10 @@ SessionType SystemInfo::detect_session() {
         return SessionType::X11;
     // Fallback: scan all processes of the real user for XDG_SESSION_TYPE.
     // Works for any DE (GNOME, KDE, Hyprland, Sway, etc.) unlike checking a specific process name.
-    auto env = utils::exec(
-        "loginname=$(logname 2>/dev/null) && "
-        "for pid in $(pgrep -u \"$loginname\" 2>/dev/null); do "
-        "val=$(tr '\\0' '\\n' < /proc/$pid/environ 2>/dev/null | grep '^XDG_SESSION_TYPE='); "
-        "[ -n \"$val\" ] && echo \"$val\" && break; done");
+    auto env = utils::exec("loginname=$(logname 2>/dev/null) && "
+                           "for pid in $(pgrep -u \"$loginname\" 2>/dev/null); do "
+                           "val=$(tr '\\0' '\\n' < /proc/$pid/environ 2>/dev/null | grep '^XDG_SESSION_TYPE='); "
+                           "[ -n \"$val\" ] && echo \"$val\" && break; done");
     s = utils::trim(env.stdout_str);
     if (s.find("wayland") != std::string::npos)
         return SessionType::Wayland;
