@@ -21,6 +21,7 @@ enum class KernelType  { Linux, LinuxLts, LinuxZen, LinuxHardened, Custom };
 enum class Bootloader  { Grub, SystemdBoot, Refind, Unknown };
 enum class SessionType { Wayland, X11, Unknown };
 enum class IgpuVendor  { Intel, Amd, None };
+enum class AurHelper   { Paru, Yay, None };
 
 struct GpuInfo {
     std::string pci_id;
@@ -28,6 +29,7 @@ struct GpuInfo {
     NvidiaArch  arch;
     std::string driver_package;
     std::string lib32_package;
+    bool        driver_is_aur = false;
 };
 
 struct SystemInfo {
@@ -38,6 +40,7 @@ struct SystemInfo {
     std::string            kernel_ver;
     Bootloader             bootloader   = Bootloader::Unknown;
     SessionType            session      = SessionType::Unknown;
+    AurHelper              aur_helper   = AurHelper::None;
 
     static SystemInfo detect();
 
@@ -50,4 +53,6 @@ private:
     static NvidiaArch arch_from_name(const std::string& name);
     static std::string driver_for_arch(NvidiaArch arch);
     static std::string lib32_for_arch(NvidiaArch arch);
+    static bool driver_is_aur(NvidiaArch arch);
+    static AurHelper detect_aur_helper();
 };

@@ -113,6 +113,7 @@ std::optional<GpuInfo> SystemInfo::detect_nvidia() {
         gpu.arch           = arch_from_name(gpu.name);
         gpu.driver_package = driver_for_arch(gpu.arch);
         gpu.lib32_package  = lib32_for_arch(gpu.arch);
+        gpu.driver_is_aur  = driver_is_aur(gpu.arch);
         return gpu;
     }
     return std::nullopt;
@@ -152,6 +153,22 @@ Bootloader SystemInfo::detect_bootloader() {
     return Bootloader::Unknown;
 }
 
+bool SystemInfo::driver_is_aur(NvidiaArch arch) {
+    switch (arch) {
+        case NvidiaArch::Blackwell:
+        case NvidiaArch::AdaLovelace:
+        case NvidiaArch::Ampere:
+        case NvidiaArch::Turing:  return false; // nvidia-open is in official repos
+        default:                  return true;  // all dkms legacy drivers are AUR
+    }
+}
+
+AurHelper SystemInfo::detect_aur_helper() {
+    if (utils::exec("command -v paru").exit_code == 0) return AurHelper::Paru;
+    if (utils::exec("command -v yay").exit_code  == 0) return AurHelper::Yay;
+    return AurHelper::None;
+}
+
 SessionType SystemInfo::detect_session() {
     auto res = utils::exec("echo $XDG_SESSION_TYPE");
     std::string s = utils::trim(res.stdout_str);
@@ -168,5 +185,6 @@ SystemInfo SystemInfo::detect() {
     info.kernel      = detect_kernel(info.kernel_ver);
     info.bootloader  = detect_bootloader();
     info.session     = detect_session();
+    info.aur_helper  = detect_aur_helper();
     return info;
 }
