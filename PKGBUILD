@@ -28,4 +28,5 @@ build() {
 package() {
     install -Dm755 "build/$pkgname" "$pkgdir/usr/bin/$pkgname"
     install -Dm644 "$pkgname-$pkgver/README.md" "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 "$pkgname-$pkgver/LICENSE"   "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
