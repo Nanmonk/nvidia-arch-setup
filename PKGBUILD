@@ -12,8 +12,6 @@ optdepends=(
     'paru: AUR helper required for Pascal/Kepler/Fermi legacy drivers'
     'yay: AUR helper required for Pascal/Kepler/Fermi legacy drivers'
 )
-# Local build: replace source with the line below and run makepkg -si
-# source=("$pkgname::git+file:///home/Nanmon/Tools/nvidia-arch-setup")
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
 sha256sums=('SKIP')
 

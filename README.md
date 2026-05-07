@@ -46,11 +46,37 @@
 | `linux-lts` | `nvidia-open-lts` | 预编译，即装即用 |
 | `linux-zen` / `linux-hardened` / 自定义 | `nvidia-open-dkms` | 本地 DKMS 编译，约 5~15 分钟 |
 
-## 前置依赖
+## 安装
+
+### 从 GitHub 克隆构建（推荐）
 
 ```bash
+# 克隆仓库
+git clone https://github.com/Nanmonk/nvidia-arch-setup.git
+cd nvidia-arch-setup
+
+# 安装构建依赖
 sudo pacman -S cmake base-devel pciutils
+
+# 构建
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+
+# 运行
+sudo ./build/nvidia-arch-setup
 ```
+
+### 使用 PKGBUILD 安装（安装到系统路径）
+
+```bash
+git clone https://github.com/Nanmonk/nvidia-arch-setup.git
+cd nvidia-arch-setup
+makepkg -si
+# 安装后可直接运行：
+sudo nvidia-arch-setup
+```
+
+### 前置依赖
 
 如果你的 GPU 是 Pascal 及更旧架构（GTX 10xx 及以下），还需要 AUR 助手：
 
@@ -59,13 +85,6 @@ sudo pacman -S cmake base-devel pciutils
 sudo pacman -S --needed base-devel git
 git clone https://aur.archlinux.org/paru.git
 cd paru && makepkg -si
-```
-
-## 构建
-
-```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
 ```
 
 ## 使用
