@@ -21,7 +21,7 @@ bool KernelParamsStep::apply_grub(const SystemInfo& /* info */) {
     if (!content) { utils::print_err("Cannot read " + path); return false; }
 
     std::string text = *content;
-    std::regex re(R"re(^(GRUB_CMDLINE_LINUX_DEFAULT="[^"]*)")re", std::regex::multiline);
+    std::regex re(R"re(^(GRUB_CMDLINE_LINUX_DEFAULT="[^"]*))re", std::regex::multiline);
     std::smatch m;
     if (!std::regex_search(text, m, re)) {
         utils::print_err("GRUB_CMDLINE_LINUX_DEFAULT not found");
@@ -69,8 +69,10 @@ bool KernelParamsStep::apply_systemd_boot(const SystemInfo& /* info */) {
             text = std::regex_replace(text, re, options_line);
             utils::write_file(entry.path().string(), text);
             utils::print_ok("Updated: " + entry.path().filename().string());
-            any = true;
+        } else {
+            utils::print_info("Already set: " + entry.path().filename().string());
         }
+        any = true;
     }
     return any;
 }

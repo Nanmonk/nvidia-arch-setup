@@ -200,8 +200,12 @@ SessionType SystemInfo::detect_session() {
     std::string s = utils::trim(res.stdout_str);
     if (s == "wayland") return SessionType::Wayland;
     if (s == "x11")     return SessionType::X11;
-    // Fallback: read from the real user's environment via /proc
-    auto env = utils::exec("cat /proc/$(pgrep -u $(logname) plasmashell | head -1)/environ 2>/dev/null | tr '\\0' '\\n' | grep XDG_SESSION_TYPE");
+    // Fallback: scan all processes of the real user for XDG_SESSION_TYPE.
+    // Works for any DE (GNOME, KDE, Hyprland, Sway, etc.) unlike checking a specific process name.
+    auto env = utils::exec("loginname=$(logname 2>/dev/null) && "
+        "for pid in $(pgrep -u \"$loginname\" 2>/dev/null); do "
+        "val=$(tr '\\0' '\\n' < /proc/$pid/environ 2>/dev/null | grep '^XDG_SESSION_TYPE='); "
+        "[ -n \"$val\" ] && echo \"$val\" && break; done");
     s = utils::trim(env.stdout_str);
     if (s.find("wayland") != std::string::npos) return SessionType::Wayland;
     if (s.find("x11")     != std::string::npos) return SessionType::X11;

@@ -4,22 +4,25 @@
 static const std::string XORG_CONF =
     "/etc/X11/xorg.conf.d/10-nvidia-drm-outputclass.conf";
 
-static const std::string XORG_CONTENT =
-    "Section \"OutputClass\"\n"
-    "    Identifier \"integrated\"\n"
-    "    MatchDriver \"i915\"\n"
-    "    Driver \"modesetting\"\n"
-    "EndSection\n"
-    "\n"
-    "Section \"OutputClass\"\n"
-    "    Identifier \"nvidia\"\n"
-    "    MatchDriver \"nvidia-drm\"\n"
-    "    Driver \"nvidia\"\n"
-    "    Option \"AllowEmptyInitialConfiguration\"\n"
-    "    Option \"PrimaryGPU\" \"yes\"\n"
-    "    ModulePath \"/usr/lib/nvidia/xorg\"\n"
-    "    ModulePath \"/usr/lib/xorg/modules\"\n"
-    "EndSection\n";
+static std::string xorg_content(IgpuVendor igpu) {
+    std::string igpu_driver = (igpu == IgpuVendor::Amd) ? "amdgpu" : "i915";
+    return
+        "Section \"OutputClass\"\n"
+        "    Identifier \"integrated\"\n"
+        "    MatchDriver \"" + igpu_driver + "\"\n"
+        "    Driver \"modesetting\"\n"
+        "EndSection\n"
+        "\n"
+        "Section \"OutputClass\"\n"
+        "    Identifier \"nvidia\"\n"
+        "    MatchDriver \"nvidia-drm\"\n"
+        "    Driver \"nvidia\"\n"
+        "    Option \"AllowEmptyInitialConfiguration\"\n"
+        "    Option \"PrimaryGPU\" \"yes\"\n"
+        "    ModulePath \"/usr/lib/nvidia/xorg\"\n"
+        "    ModulePath \"/usr/lib/xorg/modules\"\n"
+        "EndSection\n";
+}
 
 std::string OptimusStep::description() const {
     return "Configure PRIME render offload for Optimus (hybrid Intel/AMD + NVIDIA)";
@@ -36,12 +39,17 @@ bool OptimusStep::execute(const SystemInfo& info) {
 
     // Install required packages
     utils::print_info("Installing nvidia-prime and xorg-xrandr...");
-    if (!utils::exec_interactive("pacman -S --needed nvidia-prime xorg-xrandr"))
-        utils::print_warn("Package install failed, continuing...");
+    if (!utils::exec_interactive("pacman -S --needed nvidia-prime xorg-xrandr")) {
+        utils::print_err("Failed to install nvidia-prime/xorg-xrandr");
+        return false;
+    }
 
     // Write Xorg outputclass config for X11/XWayland
-    utils::exec_interactive("mkdir -p /etc/X11/xorg.conf.d");
-    if (!utils::write_file(XORG_CONF, XORG_CONTENT)) {
+    if (!utils::exec_interactive("mkdir -p /etc/X11/xorg.conf.d")) {
+        utils::print_err("Cannot create /etc/X11/xorg.conf.d");
+        return false;
+    }
+    if (!utils::write_file(XORG_CONF, xorg_content(info.igpu_vendor))) {
         utils::print_err("Cannot write " + XORG_CONF);
         return false;
     }
@@ -54,8 +62,10 @@ bool OptimusStep::execute(const SystemInfo& info) {
             std::string append =
                 "\nxrandr --setprovideroutputsource modesetting NVIDIA-0\n"
                 "xrandr --auto\n";
-            utils::write_file("/usr/share/sddm/scripts/Xsetup", *xsetup + append);
-            utils::print_ok("SDDM Xsetup updated for PRIME");
+            if (!utils::write_file("/usr/share/sddm/scripts/Xsetup", *xsetup + append))
+                utils::print_warn("Cannot update SDDM Xsetup — patch manually");
+            else
+                utils::print_ok("SDDM Xsetup updated for PRIME");
         }
     }
 
@@ -75,9 +85,12 @@ bool OptimusStep::execute(const SystemInfo& info) {
             "__GLX_VENDOR_LIBRARY_NAME=nvidia "
             "__VK_LAYER_NV_optimus=NVIDIA_only "
             "exec \"$@\"\n";
-        utils::write_file("/usr/local/bin/prime-run", prime_run);
-        utils::exec_interactive("chmod +x /usr/local/bin/prime-run");
-        utils::print_ok("prime-run wrapper created at /usr/local/bin/prime-run");
+        if (!utils::write_file("/usr/local/bin/prime-run", prime_run))
+            utils::print_warn("Cannot write prime-run wrapper");
+        else if (!utils::exec_interactive("chmod +x /usr/local/bin/prime-run"))
+            utils::print_warn("Cannot chmod prime-run wrapper");
+        else
+            utils::print_ok("prime-run wrapper created at /usr/local/bin/prime-run");
     }
 
     return true;

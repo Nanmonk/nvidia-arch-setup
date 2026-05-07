@@ -21,8 +21,10 @@ bool PacmanHookStep::execute(const SystemInfo& info) {
         "Operation=Upgrade\n"
         "Operation=Remove\n"
         "Type=Package\n"
-        "Target=" + gpu.driver_package + "\n"
-        "Target=" + gpu.utils_package + "\n"
+        "Target=" + gpu.driver_package + "\n";
+    if (!gpu.utils_package.empty())
+        hook += "Target=" + gpu.utils_package + "\n";
+    hook +=
         "Target=linux\n"
         "\n"
         "[Action]\n"
