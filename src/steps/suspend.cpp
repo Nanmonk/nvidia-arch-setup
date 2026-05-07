@@ -1,5 +1,6 @@
-#include "suspend.hpp"
-#include "core/utils.hpp"
+#include "suspend.h"
+
+#include "core/utils.h"
 
 static const char* ENABLE_CMD =
     "systemctl enable nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service";

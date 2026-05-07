@@ -1,22 +1,22 @@
+#include "core/runner.h"
+#include "core/system_info.h"
+#include "core/utils.h"
+#include "steps/driver_install.h"
+#include "steps/kernel_params.h"
+#include "steps/mkinitcpio.h"
+#include "steps/optimus.h"
+#include "steps/pacman_hook.h"
+#include "steps/suspend.h"
+
 #include <iostream>
 #include <memory>
 #include <unistd.h>
-#include "core/system_info.hpp"
-#include "core/runner.hpp"
-#include "core/utils.hpp"
-#include "steps/driver_install.hpp"
-#include "steps/mkinitcpio.hpp"
-#include "steps/kernel_params.hpp"
-#include "steps/pacman_hook.hpp"
-#include "steps/optimus.hpp"
-#include "steps/suspend.hpp"
 
 static void print_banner() {
-    std::cout <<
-        "\n\033[1;34m╔══════════════════════════════════════╗\033[0m\n"
-        "\033[1;34m║    nvidia-arch-setup  v1.0           ║\033[0m\n"
-        "\033[1;34m║    NVIDIA auto-configurator for Arch ║\033[0m\n"
-        "\033[1;34m╚══════════════════════════════════════╝\033[0m\n\n";
+    std::cout << "\n\033[1;34m╔══════════════════════════════════════╗\033[0m\n"
+                 "\033[1;34m║    nvidia-arch-setup  v1.0           ║\033[0m\n"
+                 "\033[1;34m║    NVIDIA auto-configurator for Arch ║\033[0m\n"
+                 "\033[1;34m╚══════════════════════════════════════╝\033[0m\n\n";
 }
 
 static void print_sysinfo(const SystemInfo& info) {
@@ -39,28 +39,52 @@ static void print_sysinfo(const SystemInfo& info) {
 
     std::string kname;
     switch (info.kernel) {
-        case KernelType::LinuxLts:      kname = "linux-lts"; break;
-        case KernelType::LinuxZen:      kname = "linux-zen"; break;
-        case KernelType::LinuxHardened: kname = "linux-hardened"; break;
-        case KernelType::Custom:        kname = "custom"; break;
-        default:                        kname = "linux"; break;
+    case KernelType::LinuxLts:
+        kname = "linux-lts";
+        break;
+    case KernelType::LinuxZen:
+        kname = "linux-zen";
+        break;
+    case KernelType::LinuxHardened:
+        kname = "linux-hardened";
+        break;
+    case KernelType::Custom:
+        kname = "custom";
+        break;
+    default:
+        kname = "linux";
+        break;
     }
     utils::print_info("Kernel     : " + kname + " (" + info.kernel_ver + ")");
 
     std::string bl;
     switch (info.bootloader) {
-        case Bootloader::Grub:        bl = "GRUB"; break;
-        case Bootloader::SystemdBoot: bl = "systemd-boot"; break;
-        case Bootloader::Refind:      bl = "rEFInd"; break;
-        default:                      bl = "unknown"; break;
+    case Bootloader::Grub:
+        bl = "GRUB";
+        break;
+    case Bootloader::SystemdBoot:
+        bl = "systemd-boot";
+        break;
+    case Bootloader::Refind:
+        bl = "rEFInd";
+        break;
+    default:
+        bl = "unknown";
+        break;
     }
     utils::print_info("Bootloader : " + bl);
 
     std::string sess;
     switch (info.session) {
-        case SessionType::Wayland: sess = "Wayland"; break;
-        case SessionType::X11:     sess = "X11"; break;
-        default:                   sess = "unknown"; break;
+    case SessionType::Wayland:
+        sess = "Wayland";
+        break;
+    case SessionType::X11:
+        sess = "X11";
+        break;
+    default:
+        sess = "unknown";
+        break;
     }
     utils::print_info("Session    : " + sess);
     std::cout << "\n";
@@ -74,7 +98,7 @@ static void usage(const char* prog) {
 
 int main(int argc, char* argv[]) {
     bool default_mode = false;
-    bool dry_run      = false;
+    bool dry_run = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];

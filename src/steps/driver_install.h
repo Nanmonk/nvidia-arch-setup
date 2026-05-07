@@ -1,8 +1,8 @@
 #pragma once
-#include "core/step.hpp"
+#include "core/step.h"
 
 class DriverInstallStep : public Step {
-public:
+  public:
     std::string name() const override { return "Install NVIDIA Driver"; }
     std::string description() const override;
     std::string preview(const SystemInfo& info) const override;

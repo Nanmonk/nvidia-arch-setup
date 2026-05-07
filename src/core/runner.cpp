@@ -1,5 +1,7 @@
-#include "runner.hpp"
-#include "utils.hpp"
+#include "runner.h"
+
+#include "utils.h"
+
 #include <iostream>
 
 void Runner::add(std::unique_ptr<Step> step) {
@@ -24,7 +26,8 @@ void Runner::run(const SystemInfo& info) {
     int total = 0, done = 0, skipped = 0, failed = 0;
 
     for (auto& step : steps_)
-        if (step->applicable(info)) ++total;
+        if (step->applicable(info))
+            ++total;
 
     if (dry_run_) {
         std::cout << "\n\033[1;33m[DRY RUN] No changes will be made.\033[0m "
@@ -40,7 +43,8 @@ void Runner::run(const SystemInfo& info) {
     std::cout << "\n\033[1mTotal steps: " << total << "\033[0m\n";
 
     for (auto& step : steps_) {
-        if (!step->applicable(info)) continue;
+        if (!step->applicable(info))
+            continue;
 
         bool should_run = default_mode_ || ask_confirm(*step);
         if (!should_run) {
@@ -65,14 +69,13 @@ void Runner::run(const SystemInfo& info) {
                 std::cout << "  Continue anyway? [Y/n] ";
                 std::string input;
                 std::getline(std::cin, input);
-                if (input == "n" || input == "N") break;
+                if (input == "n" || input == "N")
+                    break;
             }
         }
     }
 
-    std::cout << "\n\033[1mSummary:\033[0m "
-              << done    << " done, "
-              << skipped << " skipped, "
-              << failed  << " failed"
+    std::cout << "\n\033[1mSummary:\033[0m " << done << " done, " << skipped << " skipped, "
+              << failed << " failed"
               << " (of " << total << " total)\n";
 }

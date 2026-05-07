@@ -1,5 +1,7 @@
-#include "kernel_params.hpp"
-#include "core/utils.hpp"
+#include "kernel_params.h"
+
+#include "core/utils.h"
+
 #include <filesystem>
 #include <regex>
 
@@ -11,14 +13,16 @@ std::string KernelParamsStep::description() const {
 
 bool KernelParamsStep::applicable(const SystemInfo& info) const {
     return info.nvidia_gpu.has_value() &&
-           (info.bootloader == Bootloader::Grub ||
-            info.bootloader == Bootloader::SystemdBoot);
+           (info.bootloader == Bootloader::Grub || info.bootloader == Bootloader::SystemdBoot);
 }
 
 bool KernelParamsStep::apply_grub(const SystemInfo& /* info */) {
     const std::string path = "/etc/default/grub";
     auto content = utils::read_file(path);
-    if (!content) { utils::print_err("Cannot read " + path); return false; }
+    if (!content) {
+        utils::print_err("Cannot read " + path);
+        return false;
+    }
 
     std::string text = *content;
     std::regex re(R"re(^(GRUB_CMDLINE_LINUX_DEFAULT="[^"]*))re", std::regex::multiline);
@@ -36,7 +40,10 @@ bool KernelParamsStep::apply_grub(const SystemInfo& /* info */) {
     line += "\"";
     text = std::regex_replace(text, re, line);
 
-    if (!utils::write_file(path, text)) { utils::print_err("Cannot write " + path); return false; }
+    if (!utils::write_file(path, text)) {
+        utils::print_err("Cannot write " + path);
+        return false;
+    }
     utils::print_info("Regenerating GRUB config...");
     return utils::exec_interactive("grub-mkconfig -o /boot/grub/grub.cfg");
 }
@@ -47,15 +54,18 @@ bool KernelParamsStep::apply_systemd_boot(const SystemInfo& /* info */) {
 
     bool any = false;
     for (auto& entry : fs::directory_iterator(entries_dir)) {
-        if (entry.path().extension() != ".conf") continue;
+        if (entry.path().extension() != ".conf")
+            continue;
 
         auto content = utils::read_file(entry.path().string());
-        if (!content) continue;
+        if (!content)
+            continue;
 
         std::string text = *content;
         std::regex re(R"(^(options\s+.*)$)", std::regex::multiline);
         std::smatch m;
-        if (!std::regex_search(text, m, re)) continue;
+        if (!std::regex_search(text, m, re))
+            continue;
 
         std::string options_line = m[1].str();
         bool changed = false;
@@ -79,10 +89,12 @@ bool KernelParamsStep::apply_systemd_boot(const SystemInfo& /* info */) {
 
 bool KernelParamsStep::execute(const SystemInfo& info) {
     switch (info.bootloader) {
-        case Bootloader::Grub:        return apply_grub(info);
-        case Bootloader::SystemdBoot: return apply_systemd_boot(info);
-        default:
-            utils::print_warn("Unknown bootloader — add manually: " + PARAMS);
-            return false;
+    case Bootloader::Grub:
+        return apply_grub(info);
+    case Bootloader::SystemdBoot:
+        return apply_systemd_boot(info);
+    default:
+        utils::print_warn("Unknown bootloader — add manually: " + PARAMS);
+        return false;
     }
 }

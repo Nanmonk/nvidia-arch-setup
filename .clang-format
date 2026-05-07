@@ -22,7 +22,7 @@ IncludeCategories:
     Priority: 2
 
 # Alignment
-AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveAssignments: None
 AlignConsecutiveDeclarations: None
 AlignTrailingComments:
   Kind: Always

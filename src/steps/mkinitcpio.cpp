@@ -1,17 +1,21 @@
-#include "mkinitcpio.hpp"
-#include "core/utils.hpp"
+#include "mkinitcpio.h"
+
+#include "core/utils.h"
+
 #include <regex>
 
 static const std::string CONF = "/etc/mkinitcpio.conf";
 static const std::string MODULES_NEEDED = "nvidia nvidia_modeset nvidia_uvm nvidia_drm";
 
 std::string MkinitcpioStep::description() const {
-    return "Add nvidia modules to MODULES array and remove 'kms' from HOOKS in /etc/mkinitcpio.conf";
+    return "Add nvidia modules to MODULES array and remove 'kms' from HOOKS in "
+           "/etc/mkinitcpio.conf";
 }
 
 std::string MkinitcpioStep::preview(const SystemInfo& /* info */) const {
     auto content = utils::read_file(CONF);
-    if (!content) return "Cannot read " + CONF;
+    if (!content)
+        return "Cannot read " + CONF;
 
     std::string result = "Changes to " + CONF + ":\n";
     if (content->find("nvidia") == std::string::npos)

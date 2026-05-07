@@ -1,22 +1,31 @@
-#include "driver_install.hpp"
-#include "core/utils.hpp"
+#include "driver_install.h"
+
+#include "core/utils.h"
+
 #include <cstdlib>
 #include <unistd.h>
 
 static std::string kernel_headers(KernelType k) {
     switch (k) {
-        case KernelType::LinuxLts:      return "linux-lts-headers";
-        case KernelType::LinuxZen:      return "linux-zen-headers";
-        case KernelType::LinuxHardened: return "linux-hardened-headers";
-        default:                        return "linux-headers";
+    case KernelType::LinuxLts:
+        return "linux-lts-headers";
+    case KernelType::LinuxZen:
+        return "linux-zen-headers";
+    case KernelType::LinuxHardened:
+        return "linux-hardened-headers";
+    default:
+        return "linux-headers";
     }
 }
 
 static std::string aur_helper_cmd(AurHelper h) {
     switch (h) {
-        case AurHelper::Paru: return "paru";
-        case AurHelper::Yay:  return "yay";
-        default:              return "";
+    case AurHelper::Paru:
+        return "paru";
+    case AurHelper::Yay:
+        return "yay";
+    default:
+        return "";
     }
 }
 
@@ -86,7 +95,8 @@ bool DriverInstallStep::execute(const SystemInfo& info) {
     if (helper.empty()) {
         utils::print_warn("No AUR helper (paru/yay) found.");
         utils::print_warn("Install manually from AUR: " + aur_pkgs);
-        utils::print_warn("Note: remove nvidia-utils first if installed (conflicts with AUR utils)");
+        utils::print_warn(
+            "Note: remove nvidia-utils first if installed (conflicts with AUR utils)");
         utils::print_info("Install paru: https://aur.archlinux.org/packages/paru");
         return false;
     }

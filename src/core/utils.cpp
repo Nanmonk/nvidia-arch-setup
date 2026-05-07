@@ -1,4 +1,5 @@
-#include "utils.hpp"
+#include "utils.h"
+
 #include <array>
 #include <chrono>
 #include <cstdio>
@@ -7,15 +8,15 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 namespace utils {
 
 // --- logging ---
 
 static std::ofstream g_log;
-static std::string   g_log_path;
+static std::string g_log_path;
 
 static std::string timestamp() {
     auto now = std::chrono::system_clock::now();
@@ -33,12 +34,15 @@ void log_init(const std::string& path) {
 }
 
 void log_write(const std::string& level, const std::string& msg) {
-    if (!g_log) return;
+    if (!g_log)
+        return;
     g_log << "[" << timestamp() << "] [" << level << "] " << msg << "\n";
     g_log.flush();
 }
 
-std::string log_path() { return g_log_path; }
+std::string log_path() {
+    return g_log_path;
+}
 
 // --- exec ---
 
@@ -49,10 +53,13 @@ ExecResult exec(const std::string& cmd) {
     // Use mkstemp to avoid permission conflicts when switching between
     // root and non-root (e.g. dry-run as user, then sudo run as root).
     char tmppath[] = "/tmp/nvidia_setup_XXXXXX";
-    int  tmpfd     = mkstemp(tmppath);
+    int tmpfd = mkstemp(tmppath);
     if (tmpfd == -1) {
         FILE* pipe = popen(cmd.c_str(), "r");
-        if (!pipe) { result.exit_code = -1; return result; }
+        if (!pipe) {
+            result.exit_code = -1;
+            return result;
+        }
         while (fgets(buf.data(), buf.size(), pipe))
             result.stdout_str += buf.data();
         result.exit_code = WEXITSTATUS(pclose(pipe));
@@ -72,7 +79,8 @@ ExecResult exec(const std::string& cmd) {
     result.exit_code = WEXITSTATUS(pclose(pipe));
 
     auto err = read_file(tmppath);
-    if (err) result.stderr_str = *err;
+    if (err)
+        result.stderr_str = *err;
     unlink(tmppath);
 
     return result;
@@ -84,7 +92,7 @@ bool exec_interactive(const std::string& cmd) {
     // WIFEXITED is false when killed by signal (e.g. Ctrl+C); treat as failure.
     bool ok = WIFEXITED(status) && WEXITSTATUS(status) == 0;
     log_write("CMD", std::string("exit=") +
-              (WIFEXITED(status) ? std::to_string(WEXITSTATUS(status)) : "signal"));
+                         (WIFEXITED(status) ? std::to_string(WEXITSTATUS(status)) : "signal"));
     return ok;
 }
 
@@ -92,14 +100,16 @@ bool exec_interactive(const std::string& cmd) {
 
 bool write_file(const std::string& path, const std::string& content) {
     std::ofstream f(path);
-    if (!f) return false;
+    if (!f)
+        return false;
     f << content;
     return f.good();
 }
 
 std::optional<std::string> read_file(const std::string& path) {
     std::ifstream f(path);
-    if (!f) return std::nullopt;
+    if (!f)
+        return std::nullopt;
     std::ostringstream ss;
     ss << f.rdbuf();
     return ss.str();
@@ -119,7 +129,7 @@ bool file_exists(const std::string& path) {
 
 std::string trim(const std::string& s) {
     size_t start = s.find_first_not_of(" \t\n\r");
-    size_t end   = s.find_last_not_of(" \t\n\r");
+    size_t end = s.find_last_not_of(" \t\n\r");
     return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
 }
 

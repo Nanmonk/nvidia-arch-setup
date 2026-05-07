@@ -1,8 +1,8 @@
 #pragma once
-#include "core/step.hpp"
+#include "core/step.h"
 
 class MkinitcpioStep : public Step {
-public:
+  public:
     std::string name() const override { return "Configure mkinitcpio"; }
     std::string description() const override;
     std::string preview(const SystemInfo& info) const override;
@@ -11,7 +11,7 @@ public:
 };
 
 class MkinitcpioRebuildStep : public Step {
-public:
+  public:
     std::string name() const override { return "Rebuild initramfs"; }
     std::string description() const override { return "Run mkinitcpio -P to rebuild all presets"; }
     bool execute(const SystemInfo& info) override;
