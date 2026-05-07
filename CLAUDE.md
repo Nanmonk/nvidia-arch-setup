@@ -66,7 +66,7 @@ main()
 
 - `NvidiaSuspendStep` 启用 `nvidia-suspend/resume/hibernate.service`，防止休眠黑屏。首次安装驱动后、重启前 enable 可能失败（服务尚不存在），这是正常的。
 
-- `PacmanHookStep` 根据检测到的驱动包名写入 `/etc/pacman.d/hooks/nvidia.hook`。
+- `PacmanHookStep` 写入 `/etc/pacman.d/hooks/nvidia.hook`，`Target` 直接使用 `gpu.driver_package` 和 `gpu.utils_package`（检测阶段已设置，不从驱动包名推导）。
 
 ### 工具函数
 

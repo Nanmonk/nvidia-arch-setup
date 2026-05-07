@@ -23,7 +23,7 @@
 
 | 架构 | 代表显卡型号 | 驱动包 | 来源 |
 |---|---|---|---|
-| **Blackwell** (20xx) | RTX 5090 / 5080 / 5070 / 5060 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
+| **Blackwell** (50xx) | RTX 5090 / 5080 / 5070 / 5060 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
 | **Ada Lovelace** (40xx) | RTX 4090 / 4080 / 4070 / 4060 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
 | **Ampere** (30xx / A系) | RTX 3090 / 3080 / 3070 / 3060 / A6000 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
 | **Turing** (20xx / 16xx) | RTX 2080 / 2070 / 2060 / GTX 1660 / 1650 | `nvidia-open` / `nvidia-open-lts` / `nvidia-open-dkms` | 官方源 |
