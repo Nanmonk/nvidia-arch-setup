@@ -1,12 +1,44 @@
 #include "utils.hpp"
 #include <array>
+#include <chrono>
 #include <cstdio>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <sys/wait.h>
 
 namespace utils {
+
+// --- logging ---
+
+static std::ofstream g_log;
+static std::string   g_log_path;
+
+static std::string timestamp() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    char buf[32];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&t));
+    return buf;
+}
+
+void log_init(const std::string& path) {
+    g_log_path = path;
+    g_log.open(path, std::ios::app);
+    if (g_log)
+        g_log << "\n=== nvidia-arch-setup " << timestamp() << " ===\n";
+}
+
+void log_write(const std::string& level, const std::string& msg) {
+    if (!g_log) return;
+    g_log << "[" << timestamp() << "] [" << level << "] " << msg << "\n";
+    g_log.flush();
+}
+
+std::string log_path() { return g_log_path; }
+
+// --- exec ---
 
 ExecResult exec(const std::string& cmd) {
     ExecResult result;
@@ -29,8 +61,13 @@ ExecResult exec(const std::string& cmd) {
 }
 
 bool exec_interactive(const std::string& cmd) {
-    return WEXITSTATUS(std::system(cmd.c_str())) == 0;
+    log_write("CMD", cmd);
+    int ret = WEXITSTATUS(std::system(cmd.c_str()));
+    log_write("CMD", "exit=" + std::to_string(ret));
+    return ret == 0;
 }
+
+// --- file ops ---
 
 bool write_file(const std::string& path, const std::string& content) {
     std::ofstream f(path);
@@ -57,6 +94,8 @@ bool file_exists(const std::string& path) {
     return f.good();
 }
 
+// --- string ---
+
 std::string trim(const std::string& s) {
     size_t start = s.find_first_not_of(" \t\n\r");
     size_t end   = s.find_last_not_of(" \t\n\r");
@@ -72,9 +111,27 @@ std::vector<std::string> split(const std::string& s, char delim) {
     return parts;
 }
 
-void print_ok(const std::string& msg)   { std::cout << "\033[32m[✓]\033[0m " << msg << "\n"; }
-void print_err(const std::string& msg)  { std::cerr << "\033[31m[✗]\033[0m " << msg << "\n"; }
-void print_info(const std::string& msg) { std::cout << "\033[34m[i]\033[0m " << msg << "\n"; }
-void print_warn(const std::string& msg) { std::cout << "\033[33m[!]\033[0m " << msg << "\n"; }
+// --- print ---
+
+void print_ok(const std::string& msg) {
+    std::cout << "\033[32m[✓]\033[0m " << msg << "\n";
+    log_write("OK", msg);
+}
+void print_err(const std::string& msg) {
+    std::cerr << "\033[31m[✗]\033[0m " << msg << "\n";
+    log_write("ERR", msg);
+}
+void print_info(const std::string& msg) {
+    std::cout << "\033[34m[i]\033[0m " << msg << "\n";
+    log_write("INFO", msg);
+}
+void print_warn(const std::string& msg) {
+    std::cout << "\033[33m[!]\033[0m " << msg << "\n";
+    log_write("WARN", msg);
+}
+void print_raw(const std::string& msg) {
+    std::cout << msg << "\n";
+    log_write("INFO", msg);
+}
 
 } // namespace utils

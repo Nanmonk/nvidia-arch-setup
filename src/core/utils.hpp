@@ -26,5 +26,10 @@ void print_ok(const std::string& msg);
 void print_err(const std::string& msg);
 void print_info(const std::string& msg);
 void print_warn(const std::string& msg);
+void print_raw(const std::string& msg);  // no prefix, still logged
+
+void log_init(const std::string& path);
+void log_write(const std::string& level, const std::string& msg);
+std::string log_path();
 
 } // namespace utils

@@ -92,6 +92,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    if (!dry_run)
+        utils::log_init("/var/log/nvidia-arch-setup.log");
+
     print_banner();
 
     utils::print_info("Detecting system...");
@@ -118,5 +121,7 @@ int main(int argc, char* argv[]) {
     runner.run(info);
 
     utils::print_info("Reboot to apply changes.");
+    if (!dry_run && !utils::log_path().empty())
+        utils::print_info("Log saved to: " + utils::log_path());
     return 0;
 }
