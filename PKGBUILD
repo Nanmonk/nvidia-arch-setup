@@ -1,10 +1,10 @@
-# Maintainer: Nanmon <your@email.com>
+# Maintainer: Nanmonk <nanmonk2026@gmail.com>
 pkgname=nvidia-arch-setup
 pkgver=1.0.0
 pkgrel=1
 pkgdesc='Automatic NVIDIA driver configurator for Arch Linux'
 arch=('x86_64')
-url='https://github.com/USERNAME/nvidia-arch-setup'
+url='https://github.com/Nanmonk/nvidia-arch-setup'
 license=('MIT')
 makedepends=('cmake' 'gcc')
 depends=('pciutils')
@@ -12,7 +12,8 @@ optdepends=(
     'paru: AUR helper required for Pascal/Kepler/Fermi legacy drivers'
     'yay: AUR helper required for Pascal/Kepler/Fermi legacy drivers'
 )
-# For local build: source=("$pkgname::git+file://$PWD")
+# Local build: replace source with the line below and run makepkg -si
+# source=("$pkgname::git+file:///home/Nanmon/Tools/nvidia-arch-setup")
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
 sha256sums=('SKIP')
 

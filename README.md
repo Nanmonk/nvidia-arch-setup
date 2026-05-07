@@ -2,6 +2,8 @@
 
 自动配置 Arch Linux 上 NVIDIA 驱动的命令行工具，基于 [Arch Wiki NVIDIA](https://wiki.archlinux.org/title/NVIDIA) 和 [NVIDIA Optimus](https://wiki.archlinux.org/title/NVIDIA_Optimus)。
 
+[![GitHub](https://img.shields.io/badge/GitHub-Nanmonk%2Fnvidia--arch--setup-blue)](https://github.com/Nanmonk/nvidia-arch-setup)
+
 ## 功能
 
 - 自动检测 GPU 型号，选择正确的驱动包
